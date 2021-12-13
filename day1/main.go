@@ -1,12 +1,11 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"strconv"
 	"strings"
-
-	"github.com/pkg/errors"
 )
 
 func main() {
@@ -44,7 +43,7 @@ func readInput(file string) []int {
 func findSlidingWindowIncreases(input []int) (int, error) {
 
 	if len(input) <= 1 {
-		return -1, errors.New("Input len <= 0")
+		return -1, errors.New("input len <= 0")
 	}
 
 	increases := 0
@@ -66,7 +65,7 @@ func findSlidingWindowIncreases(input []int) (int, error) {
 func findDepthMeasurementIncreases(input []int) (int, error) {
 
 	if len(input) <= 1 {
-		return -1, errors.New("Input len <= 0")
+		return -1, errors.New("input len <= 0")
 	}
 
 	increases := 0
