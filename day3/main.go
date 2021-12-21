@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"strconv"
 	"strings"
 )
@@ -27,28 +26,43 @@ func main() {
 	}
 
 	fmt.Println("--- Part 2 ---")
+	var oxyGen int64
+	var scrubberco2 int64
+
 	l := len(input[0])
 	in := input
 	for i := 0; i < l; i++ {
-		_, ones := findCommonBitInColumn(in, i)
+		zeroes, ones := findCommonBitInColumn(in, i)
 
-		if len(ones) == 1 {
-			fmt.Printf("--- Found oxygenGeneratorValue %d\n", binaryStringToInt(ones[0]))
+		if len(ones) >= len(zeroes) {
+			in = ones
+		} else {
+			in = zeroes
+		}
+		if len(in) == 1 {
+			oxyGen = binaryStringToInt(in[0])
+			fmt.Printf("--- Found oxygenGeneratorValue %d\n", oxyGen)
 			break
 		}
-		in = ones
 	}
 
 	in2 := input
 	for i := 0; i < l; i++ {
-		zeroes, _ := findCommonBitInColumn(in2, i)
+		zeroes, ones := findCommonBitInColumn(in2, i)
+		if len(ones) >= len(zeroes) {
+			in2 = zeroes
+		} else {
+			in2 = ones
+		}
+		if len(in2) == 1 {
 
-		if len(zeroes) == 1 {
-			fmt.Printf("--- Found CO2 scrubber %d\n", binaryStringToInt(zeroes[0]))
+			scrubberco2 = binaryStringToInt(in2[0])
+			fmt.Printf("--- Found CO2 scrubber %d\n", scrubberco2)
+
 			break
 		}
-		in2 = zeroes
 	}
+	fmt.Printf("--- Life support rating %d\n", oxyGen*scrubberco2)
 
 	fmt.Println("Fin.")
 
@@ -66,7 +80,7 @@ func findCommonBitInColumn(input []string, column int) ([]string, []string) {
 	for i := 0; i < len(input); i++ {
 		if input[i][column] == '1' {
 			ones = append(ones, input[i])
-		} else {
+		} else if input[i][column] == '0' {
 			zeroes = append(zeroes, input[i])
 
 		}
