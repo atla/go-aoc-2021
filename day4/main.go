@@ -14,26 +14,29 @@ type pos struct {
 }
 
 type board struct {
-	width     int
-	height    int
-	positions []pos
+	won       bool
+	columns   int
+	rows      int
+	positions []*pos
 }
 
-func parseBoard(input string) board {
+func parseBoard(input string) *board {
+	input = strings.Trim(input, " ")
 	rows := len(strings.Split(input, "\n"))
 	clean := strings.Split(input, "\n")[0]
 	clean = strings.Replace(clean, "  ", " ", -1)
 	cols := len(strings.Split(clean, " "))
 
-	b := board{
-		width:     cols,
-		height:    rows,
-		positions: make([]pos, rows*cols),
+	b := &board{
+		won:       false,
+		columns:   cols,
+		rows:      rows,
+		positions: make([]*pos, rows*cols),
 	}
 
 	parseInput := strings.Split(strings.Replace(strings.Replace(input, "\n", " ", -1), "  ", " ", -1), " ")
 	for i, num := range parseInput {
-		b.positions[i] = pos{
+		b.positions[i] = &pos{
 			x:     i % cols,
 			y:     i / cols,
 			value: getValue(num),
@@ -51,25 +54,123 @@ func main() {
 	fmt.Println("2021 Advent of Code Day 4")
 	fmt.Println("--- Part 1 ---")
 
-	input := readInput("test.txt")
+	input := readInput("input.txt")
 	// sanitize
 	inputSplitted := strings.Split(strings.Replace(input, "  ", " ", 0), "\n\n")
 
-	var boards []board
-
+	var boards []*board
+	numbers := strings.Split(inputSplitted[0], ",")
 	//Append all boards
 	for _, b := range inputSplitted[1:] {
 		boards = append(boards, parseBoard(b))
 	}
 
-	fmt.Printf("Random numbers:\n%s\n", inputSplitted[0])
+	fmt.Printf("Random numbers:\n%s\n", numbers)
 	fmt.Printf("First board:\n%s\n", inputSplitted[1])
 	fmt.Printf("Found board count: %d\n", len(boards))
 
-	//fmt.Println("--- Part 2 ---")
+	playBingoSubSystem(boards, numbers)
 
+	fmt.Println("--- Part 2 ---")
+
+	playBingoSubSystemV2(boards, numbers)
 	fmt.Println("Fin.")
 
+}
+
+func playBingoSubSystem(boards []*board, numbers []string) {
+
+	for _, nums := range numbers {
+		num := getValue(nums)
+
+		for i, board := range boards {
+			markNumberOnBoard(board, num)
+			if checkWinConditions(*board) {
+				fmt.Printf("BINGO! Board %d won!\n", i+1)
+				fmt.Printf("Final score %d \n", calculateWinnerScore(*board)*num)
+				return
+			}
+		}
+	}
+}
+
+func playBingoSubSystemV2(boards []*board, numbers []string) {
+
+	for _, nums := range numbers {
+		num := getValue(nums)
+
+		for _, board := range boards {
+			markNumberOnBoard(board, num)
+			if !board.won && checkWinConditions(*board) {
+				board.won = true
+
+				if allBoardsWon(boards) {
+					fmt.Printf("Final score %d \n", calculateWinnerScore(*board)*num)
+				}
+			}
+		}
+	}
+
+}
+
+func allBoardsWon(boards []*board) bool {
+	for _, b := range boards {
+		if !b.won {
+			return false
+		}
+	}
+	return true
+}
+
+func calculateWinnerScore(b board) int {
+	sum := 0
+	for _, p := range b.positions {
+		if !p.marked {
+			sum += p.value
+		}
+	}
+	return sum
+}
+
+func (b board) valueAt(col, row int) pos {
+	return *b.positions[(row*b.columns)+col]
+}
+
+func checkWinConditions(b board) bool {
+
+	for col := 0; col < b.columns; col++ {
+		count := 0
+		for row := 0; row < b.rows; row++ {
+			if b.valueAt(col, row).marked {
+				count++
+			}
+		}
+		if count == b.rows {
+			return true
+		}
+	}
+
+	for row := 0; row < b.rows; row++ {
+		count := 0
+		for col := 0; col < b.columns; col++ {
+			if b.valueAt(col, row).marked {
+				count++
+			}
+		}
+		if count == b.columns {
+			return true
+		}
+	}
+
+	return false
+}
+
+func markNumberOnBoard(b *board, num int) {
+	for _, pos := range b.positions {
+		if pos.value == num {
+			pos.marked = true
+		}
+	}
 }
 
 func readInput(file string) string {
