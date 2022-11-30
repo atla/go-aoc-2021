@@ -14,7 +14,7 @@ func valueFrom(num string) int {
 }
 
 func main() {
-	fmt.Println("2021 Advent of Code Day 6")
+	fmt.Println("2021 Advent of Code Day 7")
 	fmt.Println("--- Part 1 ---")
 
 	input := readInput("input.txt")
